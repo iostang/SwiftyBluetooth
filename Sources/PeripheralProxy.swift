@@ -1107,14 +1107,19 @@ extension PeripheralProxy: CBPeripheralDelegate {
         let readPath = characteristic.uuidPath
         
         guard let request = self.readCharacteristicRequests[readPath]?.first else {
-            if characteristic.isNotifying {
-                var userInfo: [AnyHashable: Any] = ["characteristic": characteristic]
-                if let error = error {
-                    userInfo["error"] = error
-                }
-                
-                self.postPeripheralEvent(Peripheral.PeripheralCharacteristicValueUpdate, userInfo: userInfo)
+//            In some cases, it is not always true here, causing data forwarding to fail.
+//            listen: discoverCharacteristics: <CBCharacteristic: 0x30184de00, UUID = A130, properties = 0x10, value = (null), notifying = NO>
+//            ERROR: Subscription: Failed A110: The attribute could not be found.
+//            if characteristic.isNotifying {
+//                return
+//            }
+            
+            var userInfo: [AnyHashable: Any] = ["characteristic": characteristic]
+            if let error = error {
+                userInfo["error"] = error
             }
+            
+            self.postPeripheralEvent(Peripheral.PeripheralCharacteristicValueUpdate, userInfo: userInfo)
             return
         }
         
